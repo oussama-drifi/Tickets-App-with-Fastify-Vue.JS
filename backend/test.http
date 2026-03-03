@@ -1,0 +1,137 @@
+GET http://localhost:3000/health HTTP/1.1
+
+### ===========================
+### 2. Login as Admin
+### ===========================
+
+# @name login
+POST http://localhost:3000/api/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "admin123"
+}
+
+### ===========================
+### 3. Get Current User (me)
+### ===========================
+
+@token = {{login.response.body.token}}
+
+GET http://localhost:3000/api/auth/me HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ===========================
+### 4. Create a Commercial Account (Admin only)
+### ===========================
+
+POST http://localhost:3000/api/admin/commercials HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "max maefield",
+    "email": "max@example.com",
+    "password": "password123"
+}
+
+### ===========================
+### 5. Get All Commercials (Admin only)
+### ===========================
+
+GET http://localhost:3000/api/admin/commercials HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ===========================
+### 6. Get Commercial by ID (Admin only)
+### ===========================
+
+GET http://localhost:3000/api/admin/commercials/2 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ===========================
+### 7. Get All Tickets (Admin only)
+### ===========================
+
+GET http://localhost:3000/api/admin/tickets HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ===========================
+### 8. Get Ticket by ID (Admin only)
+### ===========================
+
+GET http://localhost:3000/api/admin/tickets/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ===========================
+### 9. Update Ticket Status (Admin only)
+### ===========================
+
+PATCH http://localhost:3000/api/admin/tickets/1/status HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "status": "verified"
+}
+
+### ===========================
+### 10. Login as Commercial
+### ===========================
+
+# @name commercialLogin
+POST http://localhost:3000/api/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "password123"
+}
+
+### ===========================
+### 11. Get Current User (Commercial)
+### ===========================
+
+@commercialToken = {{commercialLogin.response.body.token}}
+
+GET http://localhost:3000/api/auth/me HTTP/1.1
+Authorization: Bearer {{commercialToken}}
+
+### ===========================
+### 12. Create a Ticket (Commercial)
+### ===========================
+
+POST http://localhost:3000/api/commercials/tickets HTTP/1.1
+Authorization: Bearer {{commercialToken}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="title"
+
+Expense Report March
+------Boundary
+Content-Disposition: form-data; name="description"
+
+Office supplies purchase
+------Boundary
+Content-Disposition: form-data; name="amount"
+
+150.75
+------Boundary
+Content-Disposition: form-data; name="ticketDate"
+
+2026-03-03
+------Boundary
+Content-Disposition: form-data; name="image"; filename="receipt.png"
+Content-Type: image/png
+
+< ./uploads/sample.png
+------Boundary--
+
+### ===========================
+### 12. Get My Tickets (Commercial)
+### ===========================
+
+GET http://localhost:3000/api/commercials/tickets HTTP/1.1
+Authorization: Bearer {{commercialToken}}

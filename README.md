@@ -1,20 +1,13 @@
-# Tickets App
+# Tickets API
 
-A full-stack ticket management system built with Fastify and Vue.js.
+A ticket management REST API built with Fastify.
 
 ## Tech Stack
 
-### Backend
 - **Fastify** — Web framework
 - **Sequelize** — ORM
 - **MySQL** — Database
 - **JWT** — Authentication
-
-### Frontend
-- **Vue.js 3** — UI framework
-- **Vue Router** — Routing
-- **Pinia** — State management
-- **Vite** — Build tool
 
 ## Getting Started
 
@@ -22,34 +15,85 @@ A full-stack ticket management system built with Fastify and Vue.js.
 - Node.js (v20.19+ or v22.12+)
 - MySQL
 
-### Backend
+### Installation
 
 ```bash
-cd backend
 npm install
+```
+
+### Configuration
+
+Create a `.env` file at the root with the following variables:
+
+```env
+PORT=3000
+HOST=0.0.0.0
+DB_NAME=ticket_system
+DB_USER=root
+DB_PASSWORD=
+DB_HOST=localhost
+DB_PORT=8080
+JWT_SECRET=your_jwt_secret
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+UPLOAD_PATH=./uploads
+```
+
+### Development
+
+```bash
 npm run dev
 ```
 
-### Frontend
+### Production
 
 ```bash
-cd frontend
-npm install
-npm run dev
+npm start
 ```
 
 ## Project Structure
 
 ```
 Tickets_system/
-├── backend/        # Fastify API
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── plugins/
-│   │   └── routes/
-│   └── server.js
-├── frontend/       # Vue.js app
-│   └── src/
-└── README.md
+├── src/
+│   ├── app.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── adminController.js
+│   │   └── commercialController.js
+│   ├── models/
+│   │   ├── User.js
+│   │   └── Ticket.js
+│   ├── plugins/
+│   │   ├── db.js
+│   │   ├── auth.js
+│   │   └── upload.js
+│   └── routes/
+│       ├── authRoutes.js
+│       ├── adminRoutes.js
+│       └── commercialRoutes.js
+├── server.js
+├── test.http
+└── package.json
 ```
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/login` — Login
+- `GET /api/auth/me` — Current user
+
+### Admin (requires admin role)
+- `POST /api/admin/commercials` — Create commercial account
+- `GET /api/admin/commercials` — List commercials
+- `GET /api/admin/commercials/:id` — Get commercial details
+- `GET /api/admin/tickets` — List all tickets
+- `GET /api/admin/tickets/:id` — Get ticket details
+- `PATCH /api/admin/tickets/:id/status` — Update ticket status
+
+### Commercial (requires authentication)
+- `GET /api/commercials/tickets` — List own tickets
+- `POST /api/commercials/tickets` — Create ticket (multipart/form-data)
+
+### Health
+- `GET /health` — Health check

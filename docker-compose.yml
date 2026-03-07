@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: tickets_db
+      MYSQL_USER: tickets_user
+      MYSQL_PASSWORD: tickets_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: tickets_db
+      DB_USER: tickets_user
+      DB_PASS: tickets_pass
+      JWT_SECRET: change-me-to-a-secure-secret
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin123
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  uploads:

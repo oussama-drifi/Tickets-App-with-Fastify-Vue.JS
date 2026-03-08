@@ -7,11 +7,13 @@ export default async function adminRoutes(fastify) {
         await fastify.isAdmin(request, reply);
     });
 
-    fastify.post('/commercials', adminController.createCommercial);
     fastify.get('/commercials', adminController.getAllCommercials);
     fastify.get('/commercials/:id', adminController.getCommercialById);
+    fastify.get('/commercials/:id/tickets', adminController.getCommercialTickets);
+    fastify.post('/commercials', adminController.createCommercial);
+    fastify.patch('/commercials/:id', adminController.updateCommercial);
 
     fastify.get('/tickets', adminController.getAllTickets);
-    fastify.get('/tickets/:id', adminController.getTicketById);
+    fastify.get('/tickets/:id/image', adminController.getTicketImage);
     fastify.patch('/tickets/:id/status', adminController.updateTicketStatus);
 }

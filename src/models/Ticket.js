@@ -18,7 +18,7 @@ export const initTicketModel = (sequelize) => {
             allowNull: false
         },
         status: {
-            type: DataTypes.ENUM('pending', 'verified', 'paid'),
+            type: DataTypes.ENUM('pending', 'verified', 'paid', 'rejected'),
             defaultValue: 'pending'
         },
         ticketDate: {

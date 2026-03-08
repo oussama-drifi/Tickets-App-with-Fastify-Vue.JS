@@ -19,6 +19,21 @@ export const initUserModel = (sequelize) => {
         role: {
             type: DataTypes.ENUM('admin', 'commercial'),
             defaultValue: 'commercial'
+        },
+        bio: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            defaultValue: null
+        },
+        status: {
+            type: DataTypes.ENUM('active', 'suspended'),
+            allowNull: true,
+            defaultValue: null
+        },
+        profileImagePath: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            defaultValue: null
         }
     });
 };

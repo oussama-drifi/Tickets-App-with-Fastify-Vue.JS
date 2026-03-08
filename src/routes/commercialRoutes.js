@@ -5,6 +5,8 @@ export default async function commercialRoutes(fastify) {
         await fastify.authenticate(request, reply);
     });
 
+    fastify.patch('/profile', commercialController.updateMyProfile);
     fastify.get('/tickets', commercialController.getMyTickets);
+    fastify.get('/tickets/:id/image', commercialController.getMyTicketImage);
     fastify.post('/tickets', commercialController.createTicket);
 }

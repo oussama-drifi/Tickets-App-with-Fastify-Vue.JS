@@ -5,7 +5,7 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const s3 = new S3Client({
     region: 'auto',
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
     credentials: {
         accessKeyId: process.env.R2_ACCESS_KEY_ID,
         secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
@@ -20,14 +20,32 @@ async function uploadToR2(bucket, publicUrl, filePart) {
     const ext = filePart.filename.substring(filePart.filename.lastIndexOf('.'));
     const key = `${randomUUID()}${ext}`;
 
-    const buffer = await filePart.toBuffer();
+    let buffer;
+    try {
+        buffer = await filePart.toBuffer();
+    } catch (err) {
+        console.error('R2 upload — failed to read file buffer:', err);
+        return { error: 'Failed to read uploaded file' };
+    }
 
-    await s3.send(new PutObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        Body: buffer,
-        ContentType: filePart.mimetype,
-    }));
+    try {
+        await s3.send(new PutObjectCommand({
+            Bucket: bucket,
+            Key: key,
+            Body: buffer,
+            ContentType: filePart.mimetype,
+        }));
+    } catch (err) {
+        console.error('R2 upload — S3 PutObject failed:', {
+            code: err.Code,
+            status: err.$metadata?.httpStatusCode,
+            bucket,
+            key,
+            endpoint: `https://${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
+            message: err.message,
+        });
+        return { error: 'Failed to upload image to storage' };
+    }
 
     return { url: `${publicUrl}/${key}` };
 }

@@ -17,7 +17,7 @@ export async function buildApp(options = {}) {
     const app = Fastify(options);
 
     // Register Core Plugins
-    await app.register(cors, { origin: true });
+    await app.register(cors, { origin: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] });
 
     // Register Multipart (for image uploads)
     await app.register(multipart, {

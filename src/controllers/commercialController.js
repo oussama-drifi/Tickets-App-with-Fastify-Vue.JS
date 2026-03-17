@@ -3,9 +3,24 @@ import { saveTicketImage } from '../plugins/r2.js';
 
 export const getMyTickets = async (request, reply) => {
     const { Ticket } = request.server.db.models;
+    const { Op } = request.server.db.sequelize.constructor;
+    const { status, category, dateFrom, dateTo } = request.query;
+
+    const where = { userId: request.user.id };
+    if (status) where.status = status;
+    if (category) where.category = category;
+    if (dateFrom || dateTo) {
+        where.ticketDate = {};
+        if (dateFrom) where.ticketDate[Op.gte] = new Date(dateFrom);
+        if (dateTo) {
+            const to = new Date(dateTo);
+            to.setHours(23, 59, 59, 999);
+            where.ticketDate[Op.lte] = to;
+        }
+    }
 
     const tickets = await Ticket.findAll({
-        where: { userId: request.user.id },
+        where,
         attributes: { exclude: ['imagePath'] }
     });
 
@@ -83,6 +98,11 @@ export const createTicket = async (request, reply) => {
 
     if (!fields.title || !fields.amount || !fields.ticketDate || !fields.category) {
         return reply.code(400).send({ error: 'title, amount, ticketDate, and category are required' });
+    }
+
+    const validCategories = ['restaurant', 'hotel', 'work'];
+    if (!validCategories.includes(fields.category)) {
+        return reply.code(400).send({ error: `category must be one of: ${validCategories.join(', ')}` });
     }
 
     const ticket = await Ticket.create({

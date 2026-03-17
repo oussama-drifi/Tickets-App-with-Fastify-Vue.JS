@@ -81,8 +81,24 @@ export const updateCommercial = async (request, reply) => {
 
 export const getAllTickets = async (request, reply) => {
     const { Ticket, User } = request.server.db.models;
+    const { Op } = request.server.db.sequelize.constructor;
+    const { status, category, dateFrom, dateTo } = request.query;
+
+    const where = {};
+    if (status) where.status = status;
+    if (category) where.category = category;
+    if (dateFrom || dateTo) {
+        where.ticketDate = {};
+        if (dateFrom) where.ticketDate[Op.gte] = new Date(dateFrom);
+        if (dateTo) {
+            const to = new Date(dateTo);
+            to.setHours(23, 59, 59, 999);
+            where.ticketDate[Op.lte] = to;
+        }
+    }
 
     const tickets = await Ticket.findAll({
+        where,
         attributes: { exclude: ['imagePath'] },
         include: [{ model: User, as: 'owner', attributes: ['email'] }]
     });
@@ -125,13 +141,28 @@ export const getCommercialById = async (request, reply) => {
 
 export const getCommercialTickets = async (request, reply) => {
     const { Ticket, User } = request.server.db.models;
+    const { Op } = request.server.db.sequelize.constructor;
     const { id } = request.params;
+    const { status, category, dateFrom, dateTo } = request.query;
 
     const commercial = await User.findOne({ where: { id, role: 'commercial' } });
     if (!commercial) return reply.code(404).send({ error: 'Commercial not found' });
 
+    const where = { userId: id };
+    if (status) where.status = status;
+    if (category) where.category = category;
+    if (dateFrom || dateTo) {
+        where.ticketDate = {};
+        if (dateFrom) where.ticketDate[Op.gte] = new Date(dateFrom);
+        if (dateTo) {
+            const to = new Date(dateTo);
+            to.setHours(23, 59, 59, 999);
+            where.ticketDate[Op.lte] = to;
+        }
+    }
+
     const tickets = await Ticket.findAll({
-        where: { userId: id },
+        where,
         attributes: { exclude: ['imagePath'] }
     });
     return tickets;

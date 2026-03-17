@@ -28,7 +28,7 @@ async function dbConnector(fastify, options) {
         await sequelize.authenticate();
         // Sync models with DB (in dev only!)
         if (process.env.NODE_ENV !== 'production') {
-            await sequelize.sync();
+            await sequelize.sync({ alter: true });
         }
         
         fastify.log.info('success: Database connected and synced');

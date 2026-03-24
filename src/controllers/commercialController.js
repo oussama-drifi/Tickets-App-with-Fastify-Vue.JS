@@ -4,7 +4,7 @@ import { saveTicketImage } from '../plugins/r2.js';
 export const getMyTickets = async (request, reply) => {
     const { Ticket } = request.server.db.models;
     const { Op } = request.server.db.sequelize.constructor;
-    const { status, category, dateFrom, dateTo } = request.query;
+    const { status, category, dateFrom, dateTo, page = 1, limit = 5 } = request.query;
 
     const where = { userId: request.user.id };
     if (status) where.status = status;
@@ -19,12 +19,18 @@ export const getMyTickets = async (request, reply) => {
         }
     }
 
-    const tickets = await Ticket.findAll({
+    const pageNum = Math.max(1, parseInt(page));
+    const pageSize = Math.max(1, parseInt(limit));
+
+    const { count, rows } = await Ticket.findAndCountAll({
         where,
-        attributes: { exclude: ['imagePath'] }
+        attributes: { exclude: ['imagePath'] },
+        order: [['createdAt', 'DESC']],
+        limit: pageSize,
+        offset: (pageNum - 1) * pageSize
     });
 
-    return tickets;
+    return { tickets: rows, total: count, page: pageNum, totalPages: Math.ceil(count / pageSize) };
 };
 
 export const getMyTicketImage = async (request, reply) => {

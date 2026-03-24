@@ -82,7 +82,7 @@ export const updateCommercial = async (request, reply) => {
 export const getAllTickets = async (request, reply) => {
     const { Ticket, User } = request.server.db.models;
     const { Op } = request.server.db.sequelize.constructor;
-    const { status, category, dateFrom, dateTo } = request.query;
+    const { status, category, dateFrom, dateTo, page = 1, limit = 5 } = request.query;
 
     const where = {};
     if (status) where.status = status;
@@ -97,12 +97,18 @@ export const getAllTickets = async (request, reply) => {
         }
     }
 
-    const tickets = await Ticket.findAll({
+    const pageNum = Math.max(1, parseInt(page));
+    const pageSize = Math.max(1, parseInt(limit));
+
+    const { count, rows } = await Ticket.findAndCountAll({
         where,
         attributes: { exclude: ['imagePath'] },
-        include: [{ model: User, as: 'owner', attributes: ['email'] }]
+        include: [{ model: User, as: 'owner', attributes: ['email'] }],
+        order: [['createdAt', 'DESC']],
+        limit: pageSize,
+        offset: (pageNum - 1) * pageSize
     });
-    return tickets;
+    return { tickets: rows, total: count, page: pageNum, totalPages: Math.ceil(count / pageSize) };
 };
 
 export const searchCommercials = async (request, reply) => {
@@ -161,10 +167,11 @@ export const getCommercialTickets = async (request, reply) => {
     const { Ticket, User } = request.server.db.models;
     const { Op } = request.server.db.sequelize.constructor;
     const { id } = request.params;
-    const { status, category, dateFrom, dateTo } = request.query;
 
     const commercial = await User.findOne({ where: { id, role: 'commercial' } });
     if (!commercial) return reply.code(404).send({ error: 'Commercial not found' });
+
+    const { status, category, dateFrom, dateTo, page = 1, limit = 5 } = request.query;
 
     const where = { userId: id };
     if (status) where.status = status;
@@ -179,11 +186,17 @@ export const getCommercialTickets = async (request, reply) => {
         }
     }
 
-    const tickets = await Ticket.findAll({
+    const pageNum = Math.max(1, parseInt(page));
+    const pageSize = Math.max(1, parseInt(limit));
+
+    const { count, rows } = await Ticket.findAndCountAll({
         where,
-        attributes: { exclude: ['imagePath'] }
+        attributes: { exclude: ['imagePath'] },
+        order: [['createdAt', 'DESC']],
+        limit: pageSize,
+        offset: (pageNum - 1) * pageSize
     });
-    return tickets;
+    return { tickets: rows, total: count, page: pageNum, totalPages: Math.ceil(count / pageSize) };
 };
 
 export const getTicketImage = async (request, reply) => {
